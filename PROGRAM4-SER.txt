@@ -1,0 +1,380 @@
+
+insert.jsp
+
+
+<%-- 
+    Document   : index
+    Created on : 25 Oct, 2024, 9:57:32 PM
+    Author     : y22acm430
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <form method="post" action="Login">
+            Username :<input type="text" name="uname"/><br><br>
+            Password :<input type="password" name="pass"/><br><br>
+            <input type="submit" value="Login"/>
+        </form>
+        <br>
+        <form action="register.jsp">
+            <input type="submit" value="Register"/>
+        </form>
+    </body>
+</html>
+
+
+------------------------------------------------------------
+
+Login,java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class Login extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+
+        String name = request.getParameter("uname");
+        String pa = request.getParameter("pass");
+
+        try (Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430", "venu", "venu");
+             PreparedStatement pst = con.prepareStatement("SELECT * FROM login WHERE username = ? AND password = ?")) {
+
+            pst.setString(1, name);
+            pst.setString(2, pa); // Replace with hashed password comparison in production
+
+            try (ResultSet res = pst.executeQuery()) {
+                try (PrintWriter out = response.getWriter()) {
+                    out.println("<!DOCTYPE html>");
+                    out.println("<html>");
+                    out.println("<head><title>User Details</title>");
+                    out.println("<style>");
+                    out.println("table { width: 50%; border-collapse: collapse; }");
+                    out.println("th, td { border: 1px solid black; padding: 10px; text-align: left; }");
+                    out.println("th { background-color: #f2f2f2; }");
+                    out.println("</style>");
+                    out.println("</head>");
+                    out.println("<body>");
+                    out.println("<h1>User Details</h1>");
+
+                    if (res.next()) {
+                        out.println("<table>");
+                        out.println("<tr><th>Name</th><td>" + res.getString("name") + "</td></tr>");
+                        out.println("<tr><th>Username</th><td>" + res.getString("username") + "</td></tr>");
+                        out.println("<tr><th>Password</th><td>Can't be displayed</td></tr>");
+                        out.println("<tr><th>Registration Date</th><td>" + res.getString("regd") + "</td></tr>");
+                        out.println("<tr><th>Gender</th><td>" + res.getString("gender") + "</td></tr>");
+                        out.println("<tr><th>Branch</th><td>" + res.getString("branch") + "</td></tr>");
+                        out.println("</table>");
+                    } else {
+                        out.println("<p>Invalid credentials. Please try again.</p>");
+                        RequestDispatcher rd = request.getServletContext().getRequestDispatcher("/NewServlet");
+                        rd.include(request, response);
+                    }
+
+                    out.println("</body>");
+                    out.println("</html>");
+                }
+            }
+        } catch (SQLException ex) {
+            throw new ServletException("Database error", ex);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+
+----------------------------------------------------------
+
+NewServlet.java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+public class NewServlet extends HttpServlet 
+{
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {          
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet NewServlet</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<form method='post' action='register.jsp'>");
+            out.println("<h1>You are the new user so Register Now</h1>");
+            out.println("<input type='submit' value='Register here'/>");         
+            out.println("</form></body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+
+}
+
+
+----------------------------------------------
+
+register.jsp
+
+
+<%-- 
+    Document   : register
+    Created on : 17 Oct, 2024, 3:42:38 PM
+    Author     : y22acs430
+--%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+        <style>
+            table, th, td 
+            {
+                border:1px solid black;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <h2>Register Form</h2>
+        <table style="width: 30%">
+            <form method="post" action="details.jsp">
+                <tr>
+                    <th>NAME</th>
+                    <td><input type="text" name="name" size="30%"/></td>
+                </tr>
+                <tr>
+                   <th>USERNAME</th>
+                   <td><input type="text" name="username" size="30%"/></td>
+                </tr>
+                <tr>
+                    <th>PASSWORD</th>
+                    <td><input type="password" name="password" size="30%"/></td>
+                </tr>
+                <tr>
+                    <th>REGD</th>
+                    <td><input type="text" name="regd" size="30%"/></td>
+                </tr>
+                <tr >
+                    <th>GENDER</th>
+                    <td size="30%"><input type="radio" name="gender" value="male"/>Male 
+                        <input type="radio" name="gender" value="female"/>Female 
+                        <input type="radio" name="gender" value="others"/>Others 
+                    </td>
+                </tr> 
+                <tr>
+                    <th>BRANCH</th>
+                    <td size="30%">
+                        <select id="branch" name="branch">  
+                            <option>Select Branch</option>
+                            <option value="CSE">CSE</option>
+                            <option value="AIML">ECE</option>
+                            <option value="CBDS">EEE</option>
+                            <option value="IT">IT</option>                 
+                        </select>               
+                    </td>
+                </tr>
+                 <input type="submit" value="submit"/>
+            </form>
+    </table>
+    </body>
+</html>
+
+
+-----------------------------------------
+
+bean.java --> create a normal java file
+
+
+package t;
+public class bean 
+{
+    private String name,username,pass,regd,gender,branch;
+    public String getName()
+    {
+        return name;
+    }
+    public void setName(String name)
+    {
+        this.name=name;
+    }
+    public String getUname()
+    {
+        return username;
+    }
+    public void setUsername(String username)
+    {
+        this.username=username;
+    }
+    public String getPass()
+    {
+        return pass;
+    }
+    public void setPass(String password)
+    {
+        this.pass=password;
+    }
+    public String getRegd()
+    {
+        return regd;
+    }
+    public void setRegd(String regd)
+    {
+        this.regd=regd;
+    }
+    public String getGender()
+    {
+        return gender;
+    }
+    public void setGender(String gender)
+    {
+        this.gender=gender;
+    }
+    public String getBranch()
+    {
+        return branch;
+    }
+    public void setBranch(String branch)
+    {
+        this.branch=branch;
+    }
+}
+
+
+
+--------------------------
+details.jsp
+
+
+
+<%-- 
+    Document   : details
+    Created on : 25 Oct, 2024, 8:02:08 AM
+    Author     : y22acs430
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="t.bean"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Connection"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+     <body>
+    <%
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        Connection con=DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430","venu","venu");
+        Statement st=con.createStatement();
+        String name=request.getParameter("name");
+        String uname=request.getParameter("username");
+        String pass=request.getParameter("password");
+        String regd=request.getParameter("regd");
+        String gen=request.getParameter("gender");
+        String branch=request.getParameter("branch");
+        PreparedStatement pst;
+        bean jb=new bean();
+        jb.setName(name);
+        jb.setUsername(uname);
+        jb.setPass(pass);
+        jb.setRegd(regd);
+        jb.setGender(gen);
+        jb.setBranch(branch);
+        pst=con.prepareStatement("insert into login values(?,?,?,?,?,?)");
+        pst.setString(1,name);
+        pst.setString(2,uname);
+        pst.setString(3,pass);
+        pst.setString(4,regd);
+        pst.setString(5,gen);
+        pst.setString(6,branch);
+        int res =pst.executeUpdate();
+        if(res==1)
+        {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");         
+            out.println("<h1>Registation Completed Successfully</h1>");
+            out.println("<style><table,th{ border:1px solid black; }>");
+            out.println("<td{border:1px solid black; width:30%}></style>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<table>");
+            out.println("<tr><th>NAME</th>"+"<td>"+jb.getName()+"</td></tr>");
+            out.println("<tr><th>USERNAME:</th>"+"<td>"+jb.getUname()+"</td></tr>");
+            out.println("<tr><th>PASSWORD</th>"+"<td>can't be displayed</td></tr>");
+            out.println("<tr><th>REGD</th>"+"<td>"+jb.getRegd()+"</td></tr>");
+            out.println("<tr><th>GENDER</th>"+"<td>"+jb.getGender()+"</td></tr>");
+            out.println("<tr><th>BRANCH</th>"+"<td>"+jb.getBranch()+"</td></tr>"); 
+            out.println("</table>");
+            out.println("</body>");
+            out.println("</html>");
+            out.println("<form action='index.jsp'>");
+            out.println("<input type='submit' value='login'>");
+           
+        }
+        else
+        {
+            out.println("<h1>Registation fails</h1>");
+        }
+              
+     %>
+    </body>
+</html>

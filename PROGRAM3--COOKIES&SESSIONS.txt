@@ -1,0 +1,638 @@
+COOKIES AND SESSIONS:
+
+---index.html---
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Shopping</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+    
+        <div>
+            <center>
+            <form method="get" action="NewServlet">
+                Username:<input type="text" name="username"/><br><br>
+                Password:<input type="password" name="password"/><br><br>
+                <input type="submit" name="submit"/>
+            </form>
+            </center>
+        </div>
+    </body>
+</html>
+
+
+-----------------------------------------
+NewServlet.java
+
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+public class NewServlet extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, ClassNotFoundException, SQLException {
+        response.setContentType("text/html;charset=UTF-8");
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        Connection con=DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430","venu","venu");
+        Statement st=con.createStatement();
+        String a;
+        int r;
+        ResultSet res;
+        String name=request.getParameter("username");
+        String pass=request.getParameter("password");
+        res=st.executeQuery("select * from userdata where usename='"+name+"' and password='"+pass+"'");
+        ServletContext sc=request.getServletContext();
+        RequestDispatcher rd;
+        HttpSession ses=request.getSession(true);      
+        Integer count=(Integer)ses.getAttribute("count");
+        if(count==null)
+            count=0;               
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet NewServlet2</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            if(res.next())
+            {            
+                 rd=sc.getRequestDispatcher("/NewServlet1");
+                 rd.forward(request, response);
+            }
+            else
+            {
+                count=count+1;
+                ses.setAttribute("count", count);
+            if(count<3)
+            {
+                out.println("<h1>enter correct details</h1>");
+                rd=sc.getRequestDispatcher("/index.html");
+                rd.include(request, response);
+            }
+            else
+            {
+                out.println("<h1>No of Attempts execeded </h1>");
+            }
+           
+            }
+            out.println("</body>");
+            out.println("</html>");
+        }
+        
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(NewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(NewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(NewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(NewServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+
+----------------------------------------------------
+NewServlet1.java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+public class NewServlet1 extends HttpServlet {  
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet NewServlet1</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<form method='get' action='brand'>");
+            out.println("<h1>Choose your options:</h1>");
+            out.println("<h4>Select watch brand you want</h4>");
+            out.println("<input type='checkbox' name='n' value='noise'/>Noise<br>");
+            out.println("<input type='checkbox' name='n' value='fire boltt'/>Fire Boltt<br>");
+            out.println("<input type='checkbox' name='n' value='ptron'/>pTron<br>");
+            out.println("<input type='checkbox' name='n' value='boat wave'/>boAT Wave<br>");
+            out.println("<input type='submit' value='Next'/>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+
+-----------------------------------------------------------
+brand.java
+
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+public class brand extends HttpServlet {
+
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, ClassNotFoundException, SQLException {
+        response.setContentType("text/html;charset=UTF-8");
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        Connection con=DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430","venu","venu");
+        Statement st=con.createStatement();
+        ResultSet res;
+        String[] name=request.getParameterValues("n");    
+        String n,m,v;
+        int amou,id;
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet brand</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Select the models in it ....</h1>");
+            out.println("<form method='get' action='checkedout'>");
+            for(int i=0;i<name.length;i++)
+            {
+                res=st.executeQuery("select * from cookie where name='"+name[i]+"'");
+                while(res.next())
+                {
+                    n=res.getString(1);
+                    m=res.getString(2);
+                    v=res.getString(3);
+                    amou=res.getInt(4);
+                    id=res.getInt(5);
+                    out.println("<input type='checkbox' name='brand' value='"+id+"'/>");
+                    out.println("Name: "+n);
+                    out.println("Model: "+m);
+                    out.println("version: "+v);
+                    out.println("Amount: "+amou);
+                    out.println("Id: "+id);
+                    out.println("<br>");
+                }
+            }
+            out.println("<input type='submit' value='checkout'/>");
+            out.println("</form></body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(brand.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(brand.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(brand.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(brand.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+
+}
+
+
+
+-----------------------------------------------
+
+checkedout.java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class checkedout extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, ClassNotFoundException, SQLException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        Connection con=DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430","venu","venu");
+        Statement st=con.createStatement();
+        ResultSet res;
+        Cookie c;
+        
+        String[] name=request.getParameterValues("brand");
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet brand</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<form method='get' action='pay_money'>");
+            out.println("<h1>Payment hear...</h1>");
+            int id,amount=0;
+            int total=0;
+            for(int i=0;i<name.length;i++)
+            {                
+                res=st.executeQuery("select * from cookie where id="+name[i]+" ");
+                while(res.next())
+                {
+                    //total=total+res.getInt(1);
+                    id=res.getInt(5);            
+                    amount=res.getInt(4);
+                    total=total+amount;
+                    out.println("product ID :"+id+"  Total Amount :"+amount);
+                    c=new Cookie(String.valueOf(id),String.valueOf(amount));
+                    response.addCookie(c);
+                    out.println("<br>");
+                }                
+            }          
+            out.println("<h2>Total Amount :"+total+"</h2>");
+            c=new Cookie("total",String.valueOf(total));
+            out.println("<input type='submit' value='pay'/>");
+            out.println("</form>");
+            response.addCookie(c);
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(checkedout.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(checkedout.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(checkedout.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(checkedout.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+
+--------------------------------------------------------
+
+pay_money.java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class pay_money extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession ses=request.getSession();
+        ses.setMaxInactiveInterval(60);
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet pay_money</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<form method='get' action='payment_page'>");
+            out.println("<h3>pay the amount...</h3><br>");
+            out.println("Username :");
+            out.println("<input type='text' name='username'/><br><br>");
+            out.println("Id :");
+            out.println("<input type='text'name='id'/><br><br>");
+            out.println("<br>");
+            out.println("<input type='submit' value='payment hear.....'/>");
+            out.println("</form>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+
+}
+
+
+------------------------------------------------------
+
+payment_page.java
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import static java.lang.System.out;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class payment_page extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, ClassNotFoundException, SQLException {
+        response.setContentType("text/html;charset=UTF-8");
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        HttpSession ses=request.getSession(false);
+        Connection con=DriverManager.getConnection("jdbc:derby://localhost:1527/y22acm430","venu","venu");
+        Statement st=con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
+        ResultSet res;
+        ServletContext sc=request.getServletContext();
+        RequestDispatcher rd;
+        Cookie[] c=request.getCookies();
+        int amount=0;
+        int total=0;
+        String name=request.getParameter("username");
+        res=st.executeQuery("select * from userdata where usename='"+name+"'");
+        if(ses==null){
+            System.out.println("session expired");
+        }
+        if(res.next())
+        {
+            amount=res.getInt(3);
+        }
+        for(Cookie cookie:c)
+        {
+            if(cookie.getName().equals("total")) 
+            {
+                total=Integer.parseInt(cookie.getValue());
+            }
+        }   
+        if(total<=amount)
+            {
+                amount=amount-total;
+                res.updateInt("amount",amount);
+                res.updateRow();
+                rd=sc.getRequestDispatcher("/NewServlet2");
+                rd.include(request, response);                 
+            }   
+        else
+            {         
+                rd=sc.getRequestDispatcher("/NewServlet3");
+                rd.include(request, response); 
+            }
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet payment_page</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(payment_page.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(payment_page.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            processRequest(request, response);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(payment_page.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(payment_page.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+---------------------------------------------------------------------
+
+NewServlet2.java
+
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+@WebServlet(urlPatterns = {"/NewServlet2"})
+public class NewServlet2 extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet NewServlet2</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>payment complete</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+}
+
+
+------------------------------------------------
+
+NewServlet.java
+
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+public class NewServlet3 extends HttpServlet {
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet NewServlet3</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>payment insufficent</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }
+
+}
+
+
+

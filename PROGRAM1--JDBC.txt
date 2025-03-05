@@ -1,0 +1,161 @@
+jdbc:
+
+package jdbbcex;
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class JDBCEX {
+
+    public static void main(String[] args) {
+        try {
+            Class.forName("org.apache.derby.jdbc.ClientDriver");
+            Connection con = DriverManager.getConnection("jdbc:derby://localhost:1527/sample","app","app");
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            Scanner sc = new Scanner(System.in);
+            ResultSet rs;
+            int ch, n, rno, s1, s2, s3, s4, s5, s6, tot;
+            String q, reg, sname, g;
+
+            while (true) {
+                System.out.println("-----MENU-----");
+                System.out.println("0.exit");
+                System.out.println("1.create table");
+                System.out.println("2.insert data");
+                System.out.println("3.adding new columns");
+                System.out.println("4.updating new columns");
+                System.out.println("5.Display data(before updating)");
+                System.out.println("6.Display data(after updating)");
+                System.out.println("7.deleting data");
+                System.out.println("8.dropping data");
+
+                System.out.println("Enter your choice:");
+                ch = sc.nextInt();
+                switch (ch) {
+                    case 0:
+                        con.close();
+                        System.exit(0);
+                    case 1:
+                        try {
+                            q = "create table student_marks1 (rno integer, rgd varchar(10), sname varchar(20), s1 integer, s2 integer, s3 integer, s4 integer, s5 integer, s6 integer)";
+                            stmt.executeUpdate(q);
+                            System.out.println("Table created successfully");
+                        } catch (SQLException e) {
+                            System.out.println("Table already exists");
+                        }
+                        break;
+                    case 2:
+                        System.out.println("Enter number of students:");
+                        n = sc.nextInt();
+                        for (int i = 1; i <= n; i++) {
+                            System.out.println("Enter student " + i + " details:");
+                            System.out.println("Rno:");
+                            rno = sc.nextInt();
+                            System.out.println("Regdno:");
+                            reg = sc.next();
+                            System.out.println("Sname:");
+                            sname = sc.next();
+                            System.out.println("s1:");
+                            s1 = sc.nextInt();
+                            System.out.println("s2:");
+                            s2 = sc.nextInt();
+                            System.out.println("s3:");
+                            s3 = sc.nextInt();
+                            System.out.println("s4:");
+                            s4 = sc.nextInt();
+                            System.out.println("s5:");
+                            s5 = sc.nextInt();
+                            System.out.println("s6:");
+                            s6 = sc.nextInt();
+                            q = "insert into student_marks1 values(" + rno + ",'" + reg + "','" + sname + "'," + s1 + "," + s2 + "," + s3 + "," + s4 + "," + s5 + "," + s6 + ")";
+                            stmt.executeUpdate(q);
+                        }
+                        System.out.println(n + " records are inserted");
+                        break;
+                    case 3:
+                        try {
+                            q = "alter table student_marks1 add column tot integer";
+                            stmt.executeUpdate(q);
+                            q = "alter table student_marks1 add column grade varchar(20)";
+                            stmt.executeUpdate(q);
+                            System.out.println("New columns are added");
+                        } catch (SQLException e) {
+                            System.out.println("Already exists");
+                        }
+                        break;
+                    case 4:
+                        q = "select * from student_marks1";
+                        rs = stmt.executeQuery(q);
+                        while (rs.next()) {
+                            tot = rs.getInt(4) + rs.getInt(5) + rs.getInt(6) + rs.getInt(7) + rs.getInt(8) + rs.getInt(9);
+                            if (tot >= 560) g = "A";
+                            else if (tot >= 500) g = "B";
+                            else if (tot >= 430) g = "C";
+                            else if (tot >= 370) g = "D";
+                            else if (tot >= 300) g = "E";
+                            else g = "fail";
+                            rs.updateInt(10, tot);
+                            rs.updateString(11, g);
+                            rs.updateRow();
+                        }
+                        System.out.println("New Columns are updated");
+                        break;
+                    case 5:
+                        q = "select * from student_marks1";
+                        rs = stmt.executeQuery(q);
+                        System.out.println("The student details are:");
+                        while (rs.next()) {
+                            System.out.println("Rno:" + rs.getString(1));
+                            System.out.println("Regdno:" + rs.getString(2));
+                            System.out.println("sname:" + rs.getString(3));
+                            System.out.println("s1:" + rs.getString(4));
+                            System.out.println("s2:" + rs.getString(5));
+                            System.out.println("s3:" + rs.getString(6));
+                            System.out.println("s4:" + rs.getString(7));
+                            System.out.println("s5:" + rs.getString(8));
+                            System.out.println("s6:" + rs.getString(9));
+                        }
+                        break;
+                    case 6:
+                        q = "select * from student_marks1";
+                        rs = stmt.executeQuery(q); // Re-fetch the ResultSet
+                        System.out.println("The student details are:");
+                        while (rs.next()) {
+                            System.out.println("/nRno:" + rs.getString(1));
+                            System.out.println("Regdno:" + rs.getString(2));
+                            System.out.println("sname:" + rs.getString(3));
+                            System.out.println("s1:" + rs.getString(4));
+                            System.out.println("s2:" + rs.getString(5));
+                            System.out.println("s3:" + rs.getString(6));
+                            System.out.println("s4:" + rs.getString(7));
+                            System.out.println("s5:" + rs.getString(8));
+                            System.out.println("s6:" + rs.getString(9));
+                            System.out.println("Total:" + rs.getString(10));
+                            System.out.println("Grade:" + rs.getString(11));
+                        }
+                        break;
+                    case 7:
+                        q = "delete from student_marks1";
+                        int x = stmt.executeUpdate(q);
+                        if (x != 0) System.out.println("Table data deleted");
+                        else System.out.println("No data to delete");
+                        break;
+                    case 8:
+                        try {
+                            q = "drop table student_marks1";
+                            stmt.executeUpdate(q);
+                            System.out.println("Table deleted successfully");
+                        } catch (SQLException e) {
+                            System.out.println("Table does not exist");
+                        }
+                        break;
+                    default:
+                        System.out.println("Invalid choice");
+                        break;
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
